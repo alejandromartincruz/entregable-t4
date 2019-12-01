@@ -14,8 +14,6 @@ services:
       - code-network
 
   http:
-    hostname: nginx_container
-    domainname: mysite.local
     build: ./infrastructure/docker/nginx
     ports:
       - "8085:80"
