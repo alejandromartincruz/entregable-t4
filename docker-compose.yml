@@ -3,31 +3,42 @@ version: "3.7"
 services:
   
   redis:
-    image: redis:5
+    build: ./infrastructure/docker/redis
     ports:
       - "3306:3306"
     volumes:
       - ../src/data/redis:/data
-    labels:
-      maintainer: "Salle MPWAR Maintainers"
-    command: redis-server --appendonly yes
+    env_file:
+      - ./infrastructure/environments/${ENV:-development}/.env
+    networks:
+      - code-network
 
   http:
-    image: nginx:stable
-    volumes:
-      - ./src:/usr/share/nginx/html
-    labels:
-      maintainer: "Salle MPWAR Maintainers"
+    hostname: nginx_container
+    domainname: mysite.local
+    build: ./infrastructure/docker/nginx
     ports:
       - "8085:80"
-    links:
-      - php:php
+    volumes:
+      - ./src/www:/usr/share/nginx/html
+      - ./src/site.conf://etc/nginx/conf.d/default.conf
+    env_file:
+      - ./infrastructure/environments/${ENV:-development}/.env
+    restart: always
+    networks:
+      - code-network
 
   php:
-    image: php:7.3-fpm
-    links:
-      - redis
+    build: ./infrastructure/docker/php
     volumes:
-      - ./src:/usr/share/nginx/html
-    labels:
-      maintainer: "Salle MPWAR Maintainers"
+      - ./src/www:/usr/share/nginx/html
+    env_file:
+      - ./infrastructure/environments/${ENV:-development}/.env
+    restart: always
+    networks:
+      - code-network
+
+networks:
+    code-network:
+        driver: bridge
+

@@ -1,0 +1,4 @@
+Index.php
+<?php
+
+phpinfo();
